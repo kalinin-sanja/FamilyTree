@@ -601,7 +601,8 @@ else{
 		if($chosengen != "All") { $max_generation=$chosengen-2; }
 		else { $max_generation=100; } // any impossibly high number, will anyway stop at last generation
 	}
-	if($screen_mode!='STARSIZE') {
+
+    if($screen_mode!='STARSIZE') {
 
 	try { // only prepare location statement if table exists otherwise PDO throws exception!
 		$result = $dbh->query("SELECT 1 FROM humo_location LIMIT 1"); 
@@ -618,6 +619,7 @@ else{
 	$old_stat_prep->bindParam(1,$fam_counter_var);
 	$old_stat_prep->bindParam(2,$fam_gednr_var);
 
+    //Перебор поколений
 	for ($descendant_loop=0; $descendant_loop<=$max_generation; $descendant_loop++){
 		$descendant_family_id2[]=0;
 		$descendant_main_person[2]=0;
@@ -665,7 +667,7 @@ else{
 			}
 		}
 
-		// *** Nr of families in one generation
+        // *** Nr of families in one generation
 		for ($descendant_loop2=0; $descendant_loop2<=count($descendant_family_id); $descendant_loop2++){
 
 			if($screen_mode=='STAR') {
@@ -683,11 +685,15 @@ else{
 
 			// *** Count marriages of man ***
 			$familyDb = $db_functions->get_family($family_id_loop);
-			$parent1=''; $parent2=''; $change_main_person=false;
+//            var_dump($familyDb);
+//            echo '*******i=' . $descendant_loop2 . '********';
+            $parent1=''; $parent2=''; $change_main_person=false;
 			// *** Standard main person is the father ***
 			if ($familyDb->fam_man){
 				$parent1=$familyDb->fam_man;
-			}
+//                var_dump($parent1);
+//                echo '*******i=' . $descendant_loop2 . '********';
+            }
 			// *** After clicking the mother, the mother is main person ***
 			if ($familyDb->fam_woman==$main_person){
 				$parent1=$familyDb->fam_woman;
@@ -744,17 +750,17 @@ else{
 				// *** Privacy filter man and woman ***
 				@$person_manDb = $db_functions->get_person($familyDb->fam_man);
 
-				// *** Proces man using a class ***
+				// *** Process man using a class ***
 				$man_cls = New person_cls;
 				$man_cls->construct($person_manDb);
 
 				@$person_womanDb = $db_functions->get_person($familyDb->fam_woman);
 
-				// *** Proces woman using a clas ***
+				// *** Process woman using a class ***
 				$woman_cls = New person_cls;
 				$woman_cls->construct($person_womanDb);
 
-				// *** Proces marriage using a class ***
+				// *** Process marriage using a class ***
 				$marriage_cls = New marriage_cls;
 				$marriage_cls->construct($familyDb, $man_cls->privacy, $woman_cls->privacy);
 				$family_privacy=$marriage_cls->privacy;
@@ -1048,8 +1054,11 @@ else{
 							}
 
 							if($screen_mode=='STAR') {
+                                //Первое поколение
 								if($descendant_loop==0) {
 									$name=$man_cls->person_name($person_manDb);
+//                                    echo '*******';
+//                                    var_dump($arraynr);
 									$genarray[$arraynr]["nam"]=$name["standard_name"].$name["colour_mark"];
 									$genarray[$arraynr]["init"]=$name["initials"];
 									$genarray[$arraynr]["short"]=$name["short_firstname"];
@@ -1127,7 +1136,10 @@ else{
 					$family_nr++;
 				} // *** End check of PRO-GEN ***
 
-				// *************************************************************
+                var_dump($genarray);
+                echo '*******i=' . $descendant_loop . '********';
+
+                // *************************************************************
 				// *** Marriage                                              ***
 				// *************************************************************
 				if ($familyDb->fam_kind!='PRO-GEN'){  //onecht kind, wife without man
@@ -2094,8 +2106,14 @@ else{
 
 		} // Multiple families in 1 generation
 
-	} // nr. of generations
+//        var_dump($genarray);
+//        echo '*******i=' . $descendant_loop . '********';
+
+//        array(3) { [0]=> array(17) { ["nam"]=> string(17) "Alexandra Windsor" ["init"]=> string(4) "A.W." ["short"]=> string(9) "A Windsor" ["sex"]=> string(1) "v" ["fams"]=> string(3) "F20" ["gednr"]=> string(3) "I67" ["2nd"]=> int(0) ["dna"]=> string(2) "no" ["htx"]=> string(27) "Married to: " ["sps"]=> string(12) "Angus Ogilvy" ["spgednr"]=> string(3) "I68" ["spfams"]=> string(3) "F20" ["gen"]=> int(0) ["par"]=> int(-1) ["chd"]=> int(1) ["non"]=> int(0) ["nrc"]=> int(2) } [1]=> array(13) { ["dna"]=> string(2) "no" ["gen"]=> int(1) ["par"]=> int(0) ["chd"]=> int(1) ["non"]=> int(0) ["nrc"]=> int(0) ["2nd"]=> int(0) ["nam"]=> string(25) "James Robert Bruce Ogilvy" ["init"]=> string(4) "J.O." ["short"]=> string(8) "J Ogilvy" ["gednr"]=> string(3) "I69" ["fams"]=> string(3) "F69" ["sex"]=> string(1) "m" } [2]=> array(13) { ["dna"]=> string(2) "no" ["gen"]=> int(1) ["par"]=> int(0) ["chd"]=> int(2) ["non"]=> int(0) ["nrc"]=> int(0) ["2nd"]=> int(0) ["nam"]=> string(32) "Marina Victoria Alexandra Ogilvy" ["init"]=> string(4) "M.O." ["short"]=> string(8) "M Ogilvy" ["gednr"]=> string(3) "I71" ["fams"]=> string(3) "F70" ["sex"]=> string(1) "v" } }
+//        array(3) { [0]=> array(17) { ["nam"]=> string(17) "Alexandra Windsor" ["init"]=> string(4) "A.W." ["short"]=> string(9) "A Windsor" ["sex"]=> string(1) "v" ["fams"]=> string(3) "F20" ["gednr"]=> string(3) "I67" ["2nd"]=> int(0) ["dna"]=> string(2) "no" ["htx"]=> string(27) "Married to: " ["sps"]=> string(12) "Angus Ogilvy" ["spgednr"]=> string(3) "I68" ["spfams"]=> string(3) "F20" ["gen"]=> int(0) ["par"]=> int(-1) ["chd"]=> int(1) ["non"]=> int(0) ["nrc"]=> int(2) } [1]=> array(17) { ["dna"]=> string(2) "no" ["gen"]=> int(1) ["par"]=> int(0) ["chd"]=> int(1) ["non"]=> int(0) ["nrc"]=> int(0) ["2nd"]=> int(0) ["nam"]=> string(25) "James Robert Bruce Ogilvy" ["init"]=> string(4) "J.O." ["short"]=> string(8) "J Ogilvy" ["gednr"]=> string(3) "I69" ["fams"]=> string(3) "F69" ["sex"]=> string(1) "m" ["htx"]=> string(36) "Marriage/ Related to: " ["sps"]=> string(15) "Julia Rawlinson" ["spgednr"]=> string(3) "I70" ["spfams"]=> string(3) "F69" } [2]=> array(17) { ["dna"]=> string(2) "no" ["gen"]=> int(1) ["par"]=> int(0) ["chd"]=> int(2) ["non"]=> int(0) ["nrc"]=> int(0) ["2nd"]=> int(0) ["nam"]=> string(32) "Marina Victoria Alexandra Ogilvy" ["init"]=> string(4) "M.O." ["short"]=> string(8) "M Ogilvy" ["gednr"]=> string(3) "I71" ["fams"]=> string(3) "F70" ["sex"]=> string(1) "v" ["htx"]=> string(27) "Married to: " ["sps"]=> string(11) "Paul Mowatt" ["spgednr"]=> string(3) "I72" ["spfams"]=> string(3) "F70" } }
+    } // nr. of generations
 	} // end if not STARSIZE
+
 } // End of single person
 
 // *** If source footnotes are selected, show them here ***

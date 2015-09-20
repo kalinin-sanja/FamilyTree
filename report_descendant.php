@@ -78,13 +78,18 @@ function generate() {
 
 		$movepar=0;  // flags the need to move parent box. 1 means: call move() function
 
+        //http://humogen/family.php?database=humo_&id=F20&main_person=I67&screen_mode=STAR
+        //array(3) { [0]=> array(17) { ["nam"]=> string(17) "Alexandra Windsor" ["init"]=> string(4) "A.W." ["short"]=> string(9) "A Windsor" ["sex"]=> string(1) "v" ["fams"]=> string(3) "F20" ["gednr"]=> string(3) "I67" ["2nd"]=> int(0) ["dna"]=> string(2) "no" ["htx"]=> string(27) "Married to: " ["sps"]=> string(12) "Angus Ogilvy" ["spgednr"]=> string(3) "I68" ["spfams"]=> string(3) "F20" ["gen"]=> int(0) ["par"]=> int(-1) ["chd"]=> int(1) ["non"]=> int(0) ["nrc"]=> int(2) } [1]=> array(17) { ["dna"]=> string(2) "no" ["gen"]=> int(1) ["par"]=> int(0) ["chd"]=> int(1) ["non"]=> int(0) ["nrc"]=> int(0) ["2nd"]=> int(0) ["nam"]=> string(25) "James Robert Bruce Ogilvy" ["init"]=> string(4) "J.O." ["short"]=> string(8) "J Ogilvy" ["gednr"]=> string(3) "I69" ["fams"]=> string(3) "F69" ["sex"]=> string(1) "m" ["htx"]=> string(36) "Marriage/ Related to: " ["sps"]=> string(15) "Julia Rawlinson" ["spgednr"]=> string(3) "I70" ["spfams"]=> string(3) "F69" } [2]=> array(17) { ["dna"]=> string(2) "no" ["gen"]=> int(1) ["par"]=> int(0) ["chd"]=> int(2) ["non"]=> int(0) ["nrc"]=> int(0) ["2nd"]=> int(0) ["nam"]=> string(32) "Marina Victoria Alexandra Ogilvy" ["init"]=> string(4) "M.O." ["short"]=> string(8) "M Ogilvy" ["gednr"]=> string(3) "I71" ["fams"]=> string(3) "F70" ["sex"]=> string(1) "v" ["htx"]=> string(27) "Married to: " ["sps"]=> string(11) "Paul Mowatt" ["spgednr"]=> string(3) "I72" ["spfams"]=> string(3) "F70" } }
+        //array(3) { [0]=> array(21) { ["nam"]=> string(17) "Alexandra Windsor" ["init"]=> string(4) "A.W." ["short"]=> string(9) "A Windsor" ["sex"]=> string(1) "v" ["fams"]=> string(3) "F20" ["gednr"]=> string(3) "I67" ["2nd"]=> int(0) ["dna"]=> string(2) "no" ["htx"]=> string(27) "Married to: " ["sps"]=> string(12) "Angus Ogilvy" ["spgednr"]=> string(3) "I68" ["spfams"]=> string(3) "F20" ["gen"]=> int(0) ["par"]=> int(-1) ["chd"]=> int(1) ["non"]=> int(0) ["nrc"]=> int(2) ["y"]=> int(40) ["x"]=> int(80) ["fst"]=> int(0) ["lst"]=> int(160) } [1]=> array(19) { ["dna"]=> string(2) "no" ["gen"]=> int(1) ["par"]=> int(0) ["chd"]=> int(1) ["non"]=> int(0) ["nrc"]=> int(0) ["2nd"]=> int(0) ["nam"]=> string(25) "James Robert Bruce Ogilvy" ["init"]=> string(4) "J.O." ["short"]=> string(8) "J Ogilvy" ["gednr"]=> string(3) "I69" ["fams"]=> string(3) "F69" ["sex"]=> string(1) "m" ["htx"]=> string(36) "Marriage/ Related to: " ["sps"]=> string(15) "Julia Rawlinson" ["spgednr"]=> string(3) "I70" ["spfams"]=> string(3) "F69" ["y"]=> int(195) ["x"]=> int(0) } [2]=> array(19) { ["dna"]=> string(2) "no" ["gen"]=> int(1) ["par"]=> int(0) ["chd"]=> int(2) ["non"]=> int(0) ["nrc"]=> int(0) ["2nd"]=> int(0) ["nam"]=> string(32) "Marina Victoria Alexandra Ogilvy" ["init"]=> string(4) "M.O." ["short"]=> string(8) "M Ogilvy" ["gednr"]=> string(3) "I71" ["fams"]=> string(3) "F70" ["sex"]=> string(1) "v" ["htx"]=> string(27) "Married to: " ["sps"]=> string(11) "Paul Mowatt" ["spgednr"]=> string(3) "I72" ["spfams"]=> string(3) "F70" ["y"]=> int(195) ["x"]=> int(160) } }
+
 		//Перебор всех людей
 		for($i=0; $i < count($genarray);$i++) {
 			if(!isset($genarray[$i])) { break; }
 
 			$distance=0;
 
-			$genarray[$i]["y"]=($genarray[$i]["gen"]*($vbasesize))+40;	//Координата высоты Y определяется как номер поколения умноженный на расстояние между двумя поколениями
+			//Координата высоты Y определяется как номер поколения умноженный на расстояние между двумя поколениями
+			$genarray[$i]["y"]=($genarray[$i]["gen"]*($vbasesize))+40;
 			$par=$genarray[$i]["par"];
 			if($genarray[$i]["chd"]==1) {   // the first child in this fam
 				if($genarray[$i]["gen"]==0) {  // this is base person - put in left most position
@@ -147,7 +152,7 @@ function generate() {
 
 		}	// end for loop
 
-	} // end if vertical
+    } // end if vertical
 
 	else {  // horizontal
 		global $hbasesize; // horizontal distance in between X value of parent and X value of child
@@ -295,7 +300,7 @@ function move($i) {
 		$distance = $genarray[$i]["x"] - $tempx; //Разница между новой и старой координатой
 		/***********************************************/
 
-		/********Обзор следующей семьи******************/
+		/********Обзор семьи человека******************/
 		$n=$i+1; //Индекс следующего человека
 		while($genarray[$n]["gen"] == $genarray[$n-1]["gen"]) {	//Обзор семьи
 			//Если есть дети - устанавливаем координату по середине.

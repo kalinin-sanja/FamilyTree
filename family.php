@@ -593,9 +593,10 @@ else{
 	}
 
 	if($screen_mode=='STAR') {
-		$arraynr=0;
+		$arraynr=0; //Индекс
 	}
 
+    //Установка количества поколений
 	// *** Nr. of generations ***
 	if($screen_mode=='STAR') {
 		if($chosengen != "All") { $max_generation=$chosengen-2; }
@@ -620,7 +621,7 @@ else{
 	$old_stat_prep->bindParam(2,$fam_gednr_var);
 
     //Перебор поколений
-	for ($descendant_loop=0; $descendant_loop<=$max_generation; $descendant_loop++){
+	for ($generateIndex=0; $generateIndex<=$max_generation; $generateIndex++){
 		$descendant_family_id2[]=0;
 		$descendant_main_person[2]=0;
 		if (!isset($descendant_family_id2[1])){ break; }
@@ -635,11 +636,11 @@ else{
 		unset ($descendant_main_person2);
 
 		if($screen_mode=='STAR') {
-			if($descendant_loop!=0) {
+			if($generateIndex!=0) {
 				if(isset($genarray[$arraynr])) {
 					$temppar=$genarray[$arraynr]["par"];
 				}
-				while(isset($genarray[$temppar]["gen"]) AND $genarray[$temppar]["gen"]==$descendant_loop-1) {
+				while(isset($genarray[$temppar]["gen"]) AND $genarray[$temppar]["gen"]==$generateIndex-1) {
 					$lst_in_array += $genarray[$temppar]["nrc"];
 					$temppar++;
 				}
@@ -654,45 +655,44 @@ else{
 					$pdf->SetFont('Arial','BI',14);
 					$pdf->SetFillColor(200,220,255);
 					if($pdf->GetY() > 250) { $pdf->AddPage(); $pdf->SetY(20); }
-					$pdf->Cell(0,8,pdf_convert(__('generation ')).$number_roman[$descendant_loop+1],0,1,'C',true);
+					$pdf->Cell(0,8,pdf_convert(__('generation ')).$number_roman[$generateIndex+1],0,1,'C',true);
 					$pdf->SetFont('Arial','',12);
 				}
 				elseif($screen_mode=='RTF') {
-					$rtf_text=__('generation ').$number_roman[$descendant_loop+1];
+					$rtf_text=__('generation ').$number_roman[$generateIndex+1];
 					$sect->writeText($rtf_text, $arial14, $parHead);
 				}
 				else {
-					echo '<div class="standard_header fonts">'.__('generation ').$number_roman[$descendant_loop+1].'</div>';
+					echo '<div class="standard_header fonts">'.__('generation ').$number_roman[$generateIndex+1].'</div>';
 				}
 			}
 		}
 
+        //Проход по семьям в текущем поколении.
         // *** Nr of families in one generation
-		for ($descendant_loop2=0; $descendant_loop2<=count($descendant_family_id); $descendant_loop2++){
+		for ($familyIndex=0; $familyIndex<=count($descendant_family_id); $familyIndex++){
 
 			if($screen_mode=='STAR') {
+                //Для людей без семьи устанавливаем количество детей в 0.
 				while (isset($genarray[$arraynr]["non"]) AND $genarray[$arraynr]["non"]==1
-				AND isset($genarray[$arraynr]["gen"]) AND $genarray[$arraynr]["gen"]==$descendant_loop) {
+				AND isset($genarray[$arraynr]["gen"]) AND $genarray[$arraynr]["gen"]==$generateIndex) {
 					$genarray[$arraynr]["nrc"]==0;
 					$arraynr++;
 				}
 			}
 
-			if ($descendant_family_id[$descendant_loop2]==''){ break; }
-			$family_id_loop=$descendant_family_id[$descendant_loop2];
-			$main_person=$descendant_main_person[$descendant_loop2];
+			if ($descendant_family_id[$familyIndex]==''){ break; } //Семьи закончились
+
+			$family_id_loop=$descendant_family_id[$familyIndex];   //Текущая семья
+			$main_person=$descendant_main_person[$familyIndex];
 			$family_nr=1;
 
 			// *** Count marriages of man ***
 			$familyDb = $db_functions->get_family($family_id_loop);
-//            var_dump($familyDb);
-//            echo '*******i=' . $descendant_loop2 . '********';
             $parent1=''; $parent2=''; $change_main_person=false;
 			// *** Standard main person is the father ***
 			if ($familyDb->fam_man){
 				$parent1=$familyDb->fam_man;
-//                var_dump($parent1);
-//                echo '*******i=' . $descendant_loop2 . '********';
             }
 			// *** After clicking the mother, the mother is main person ***
 			if ($familyDb->fam_woman==$main_person){
@@ -775,7 +775,7 @@ else{
 						if($screen_mode=='PDF') {
 							// put internal PDF link to family
 							$pdf->Cell(0,1," ",0,1);
-							$romannr=$number_roman[$descendant_loop+1].'-'.$number_generation[$descendant_loop2+1];
+							$romannr=$number_roman[$generateIndex+1].'-'.$number_generation[$familyIndex+1];
 							if(isset($link[$romannr])) {
 								$pdf->SetLink($link[$romannr],-1); //link to this family from child with "volgt"
 							}
@@ -787,7 +787,7 @@ else{
 							//$sect->writeText($rtf_text, $arial12, new PHPRtfLite_ParFormat());
 						}
 						else {
-							echo '<a name="'.$number_roman[$descendant_loop+1].'-'.$number_generation[$descendant_loop2+1].'">';
+							echo '<a name="'.$number_roman[$generateIndex+1].'-'.$number_generation[$familyIndex+1].'">';
 							echo '&nbsp;</a>';
 						}
 					}
@@ -796,7 +796,7 @@ else{
 						// Show "Family Page", user's choice or default
 						$pdf->SetLeftMargin(10);
 						$pdf->Cell(0,2," ",0,1);
-						if($pdf->GetY() > 260 AND $descendant_loop2!=0) {
+						if($pdf->GetY() > 260 AND $familyIndex!=0) {
 							// move to next page so family sheet banner won't be last on page
 							// but if we are in first family in generation, the gen banner
 							// is already checked so no need here
@@ -828,7 +828,7 @@ else{
 					}
 					else {
 						// *** Add tip in family screen ***
-						if (!$bot_visit AND $descendant_loop==0 AND $parent1_marr==0){
+						if (!$bot_visit AND $generateIndex==0 AND $parent1_marr==0){
 							echo '<div class="print_version"><b>';
 							printf(__('TIP: use %s for other (ancestor and descendant) reports.'), '<img src="images/reports.gif">');
 							echo '</b><br><br></div>';
@@ -854,14 +854,14 @@ else{
 							echo '<div class="parent1 fonts">';
 							// *** Show roman number in descendant_report ***
 							if ($descendant_report==true){
-								echo '<b>'.$number_roman[$descendant_loop+1].'-'.$number_generation[$descendant_loop2+1].'</b> '; }
+								echo '<b>'.$number_roman[$generateIndex+1].'-'.$number_generation[$familyIndex+1].'</b> '; }
 						}
 						if($screen_mode=='PDF') {
 							if ($descendant_report==true) {
-								$pdf->Write(8,$number_roman[$descendant_loop+1].'-'.$number_generation[$descendant_loop2+1]." "); }
+								$pdf->Write(8,$number_roman[$generateIndex+1].'-'.$number_generation[$familyIndex+1]." "); }
 						}
 						if($screen_mode=='RTF') {
-							$rtf_text=' <b>'.$number_roman[$descendant_loop+1].'-'.$number_generation[$descendant_loop2+1].'</b> ';
+							$rtf_text=' <b>'.$number_roman[$generateIndex+1].'-'.$number_generation[$familyIndex+1].'</b> ';
 							//$sect->writeText($rtf_text, $arial12, new PHPRtfLite_ParFormat());
 							$sect->writeText($rtf_text, $arial12);
 						}
@@ -872,7 +872,7 @@ else{
 								echo $woman_cls->person_data("parent1", $id);
 
 								// *** Change page title ***
-								if ($descendant_loop==0 AND $descendant_loop2==0){
+								if ($generateIndex==0 AND $familyIndex==0){
 									echo '<script type="text/javascript">';
 									$name = $woman_cls->person_name($person_womanDb);
 									echo 'document.title = "'.__('Family Page').': '.
@@ -953,7 +953,8 @@ else{
 							}
 
 							if($screen_mode=='STAR') {
-								if($descendant_loop==0) {
+                                //Начальное поколение
+								if($generateIndex==0) {
 									$name=$woman_cls->person_name($person_womanDb);
 									$genarray[$arraynr]["nam"]=$name["standard_name"].$name["colour_mark"];
 									$genarray[$arraynr]["init"]=$name["initials"];
@@ -973,7 +974,7 @@ else{
 								echo $man_cls->person_data("parent1", $id);
 
 								// *** Change page title ***
-								if ($descendant_loop==0 AND $descendant_loop2==0){
+								if ($generateIndex==0 AND $familyIndex==0){
 									echo '<script type="text/javascript">';
 									$name = $man_cls->person_name($person_manDb);
 									echo 'document.title = "'.__('Family Page').': '.
@@ -1054,11 +1055,9 @@ else{
 							}
 
 							if($screen_mode=='STAR') {
-                                //Первое поколение
-								if($descendant_loop==0) {
+                                //Начальное поколение
+								if($generateIndex==0) {
 									$name=$man_cls->person_name($person_manDb);
-//                                    echo '*******';
-//                                    var_dump($arraynr);
 									$genarray[$arraynr]["nam"]=$name["standard_name"].$name["colour_mark"];
 									$genarray[$arraynr]["init"]=$name["initials"];
 									$genarray[$arraynr]["short"]=$name["short_firstname"];
@@ -1124,7 +1123,7 @@ else{
 							}
 						}
 						else { //screenmode is STAR
-							if($descendant_loop==0) {
+							if($generateIndex==0) {
 								$genarray[$arraynr]=$genarray[$arraynr-1];
 								$genarray[$arraynr]["2nd"]=1;
 								//$genarray[$arraynr]["fams"]=$id;
@@ -1136,8 +1135,8 @@ else{
 					$family_nr++;
 				} // *** End check of PRO-GEN ***
 
-                var_dump($genarray);
-                echo '*******i=' . $descendant_loop . '********';
+//                var_dump($genarray);
+//                echo '*******i=' . $descendant_loop . '********';
 
                 // *************************************************************
 				// *** Marriage                                              ***
@@ -1172,7 +1171,6 @@ else{
 							}
 						}
 					}
-
 					if($screen_mode=='RTF') {
 						if ($family_privacy){
 							// *** Show standard marriage data ***
@@ -1367,6 +1365,7 @@ else{
 						}
 					}
 					if($screen_mode=='STAR') {
+                        //Записывается только имя супругу.
 						if($person_womanDb) {
 							$name=$woman_cls->person_name($person_womanDb);
 							$genarray[$arraynr]["sps"]=$name["standard_name"];
@@ -1486,7 +1485,7 @@ else{
 				} //end "if not STAR"
 
 				if($screen_mode=='STAR') {
-						if($descendant_loop==0) {
+						if($generateIndex==0) {
 						$lst_in_array=$count_marr;
 						$genarray[$arraynr]["gen"]=0;
 						$genarray[$arraynr]["par"]=-1;
@@ -1499,14 +1498,17 @@ else{
 				// *** Children                                              ***
 				// *************************************************************
 
+				//Нет детей
 				if($screen_mode=='STAR') {
 					if (!$familyDb->fam_children){
 						$genarray[$arraynr]["nrc"]=0;
 					}
 				}
 
+                //Есть дети
 				if ($familyDb->fam_children){
 					$childnr=1;
+                    //Получаем GEDCOM-идентификаторы детей.
 					$child_array=explode(";",$familyDb->fam_children);
 
 					if($screen_mode=='') {
@@ -1537,6 +1539,7 @@ else{
 						}
 					}
 					if($screen_mode=='STAR') {
+                        //Записываем родителю количество детей.
 						$genarray[$arraynr]["nrc"]=count($child_array);
 						// dna -> count only man or women
 						if($dna=="ydna" OR $dna=="mtdna") { 
@@ -1551,7 +1554,9 @@ else{
 						}
 					}
 
+                    //Проход по детям.
 					for ($i=0; $i<=substr_count($familyDb->fam_children, ";"); $i++){
+                        //Извлекаем запись ребёнка из БД.
 						@$childDb = $db_functions->get_person($child_array[$i]);
 						// *** Use person class ***
 						$child_cls = New person_cls;
@@ -1599,6 +1604,7 @@ else{
 							$sect->writeText($rtf_text, $arial12);
 						}
 						if($screen_mode=='STAR') {
+                            //Непонятные переменные!
 							$chdn_in_gen=$nrchldingen + $childnr;
 							$place=$lst_in_array+$chdn_in_gen;
 
@@ -1616,7 +1622,8 @@ else{
 								$genarray[$place]["dna"]="no";
 							}
 
-							$genarray[$place]["gen"]=$descendant_loop+1;
+                            //Записываем данные
+							$genarray[$place]["gen"]=$generateIndex+1;
 							$genarray[$place]["par"]=$arraynr;
 							$genarray[$place]["chd"]=$childnr;
 							$genarray[$place]["non"]=0;
@@ -1639,7 +1646,7 @@ else{
 						}
 
 						// *** Build descendant_report ***
-						if ($descendant_report==true AND $childDb->pers_fams AND $descendant_loop<$max_generation){
+						if ($descendant_report==true AND $childDb->pers_fams AND $generateIndex<$max_generation){
 
 							// *** 1st family of child ***
 							$child_family=explode(";",$childDb->pers_fams);
@@ -1656,7 +1663,7 @@ else{
 								for ($k=0; $k<count($child_family) ; $k++) {
 									$check_double[]=$child_family[$k];
 									// *** Save "Follows: " text in array, also needed for doubles... ***
-									$follows_array[]=$number_roman[$descendant_loop+2].'-'.$number_generation[count($descendant_family_id2)];
+									$follows_array[]=$number_roman[$generateIndex+2].'-'.$number_generation[count($descendant_family_id2)];
 								}
 							}
 
@@ -1769,12 +1776,12 @@ else{
 						$childnr++;
 					}
 					if($screen_mode=='STAR') {
-						$nrchldingen += ($childnr-1);
+						$nrchldingen += ($childnr-1);   //Непонятно!
 					}
 					if($screen_mode=='PDF') {
 						$pdf->SetFont('Arial','',12);
 					}
-				}
+				}//Есть дети.
 
 				if($screen_mode=='') {
 					// *********************************************************************************************
@@ -2099,7 +2106,7 @@ else{
 
 				}
 				if($screen_mode=='STAR') {
-					$arraynr++;
+					$arraynr++; //Увеличение индекса
 				}
 
 			} // Show multiple marriages
@@ -2114,7 +2121,7 @@ else{
     } // nr. of generations
 	} // end if not STARSIZE
 
-} // End of single person
+} // End of show family
 
 // *** If source footnotes are selected, show them here ***
 if (isset($_SESSION['save_source_presentation']) AND $_SESSION['save_source_presentation']=='footnote' AND $screen_mode!="PDF"){
